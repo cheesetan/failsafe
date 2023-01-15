@@ -10,6 +10,8 @@ import Firebase
 
 struct ContactView: View {
     
+    @State private var arrayofusers = []
+    
     @AppStorage("isLoggedIn", store: .standard) private var isLoggedIn = false
     @AppStorage("finalPassword", store: .standard) private var finalPassword = ""
     @AppStorage("finalEmail", store: .standard) private var finalEmail = ""
@@ -22,16 +24,40 @@ struct ContactView: View {
                     .foregroundColor(.red)
                 
                 Button {
-                    Firestore.firestore().collection("cities").whereField("capital", isEqualTo: true)
+                    Firestore.firestore().collection("groups").whereField("users", arrayContains: "\(finalEmail)")
                         .getDocuments() { (querySnapshot, err) in
                             if let err = err {
                                 print("Error getting documents: \(err)")
                             } else {
                                 for document in querySnapshot!.documents {
-                                    print("\(document.documentID) => \(document.data())")
+                                    Firestore.firestore().collection("groups").document("\(document.documentID)").getDocument { (document, error) in
+                                        if let document = document, document.exists {
+                                            let user = document.get("users") as! [Any]
+                                            var temparray = Array<Any>()
+                                            temparray = Array(user)
+                                            
+                                            temparray.forEach { user in
+                                                if self.arrayofusers.firstIndex(where: {$0 as! String == "\(user)"}) == nil {
+                                                    if user as! String != finalEmail {
+                                                        arrayofusers.append(user)
+                                                        
+                                                        Firestore.firestore().collection("users").document("\(user)").updateData(["emergency-notify": "true"]) { error in
+                                                            if let error = error {
+                                                                print("Error updating document: \(error)")
+                                                            } else {
+                                                                print("Document successfully updated!")
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            print("Document does not exist")
+                                        }
+                                    }
                                 }
                             }
-                    }
+                        }
                 } label: {
                     RoundedRectangle(cornerRadius: 48)
                         .frame(width: UIScreen.main.bounds.width / 2, height: UIScreen.main.bounds.width / 2)
