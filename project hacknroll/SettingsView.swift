@@ -118,8 +118,16 @@ struct SettingsView: View {
                 }
             }
         }
-        .alert("", isPresented: $openAlertForEditDisplayName) {
-            
+        .alert("Hey! Want to change your username?", isPresented: $openAlertForEditDisplayName) {
+            Button("Cancel", role: .cancel) {
+                fatalError("User didnt buy the username pack bruh")
+            }
+            Button("Buy", role: .destructive) {
+                paidForEditingAcctDisplayName = true
+            }
+
+        } message: {
+            Text("Buy our username pack!")
         }
     }
 }
