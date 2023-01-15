@@ -18,6 +18,9 @@ struct GroupsView: View {
     @AppStorage("isLoggedIn", store: .standard) private var isLoggedIn = false
     @AppStorage("finalPassword", store: .standard) private var finalPassword = ""
     @AppStorage("finalEmail", store: .standard) private var finalEmail = ""
+    
+    @AppStorage("paidForNewGroup", store: .standard) private var paidForNewGroup = false
+    @State private var openAlertForNewGroup = false
 
     var body: some View {
         NavigationStack {
@@ -54,7 +57,12 @@ struct GroupsView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        showingJoinGroup.toggle()
+                        if paidForNewGroup {
+                            showingJoinGroup.toggle()
+                        } else {
+                            openAlertForNewGroup = true
+                        }
+                        
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -78,6 +86,17 @@ struct GroupsView: View {
         }
         .onAppear {
             viewModel.fetchData()
+        }
+        .alert("Hey! Want to create a new group?", isPresented: $openAlertForNewGroup) {
+            Button("Cancel", role: .cancel) {
+                fatalError("User didnt buy the group pack bruh")
+            }
+            Button("Buy", role: .destructive) {
+                paidForNewGroup = true
+            }
+
+        } message: {
+            Text("Buy our new group pack!")
         }
     }
 }

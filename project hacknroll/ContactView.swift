@@ -16,6 +16,9 @@ struct ContactView: View {
     @AppStorage("finalPassword", store: .standard) private var finalPassword = ""
     @AppStorage("finalEmail", store: .standard) private var finalEmail = ""
     
+    @AppStorage("paidForEmergency", store: .standard) private var paidForEmergency = false
+    @State private var openAlertForEmergency = false
+    
     var body: some View {
         VStack {
             ZStack {
@@ -24,6 +27,7 @@ struct ContactView: View {
                     .foregroundColor(.red)
                 
                 Button {
+                    if paidForEmergency {
                     Firestore.firestore().collection("groups").whereField("users", arrayContains: "\(finalEmail)")
                         .getDocuments() { (querySnapshot, err) in
                             if let err = err {
@@ -58,6 +62,9 @@ struct ContactView: View {
                                 }
                             }
                         }
+                    } else {
+                        openAlertForEmergency = true
+                    }
                 } label: {
                     RoundedRectangle(cornerRadius: 48)
                         .frame(width: UIScreen.main.bounds.width / 2, height: UIScreen.main.bounds.width / 2)
@@ -70,7 +77,18 @@ struct ContactView: View {
                             ,alignment: .center)
                 }
             }
-            
+            .alert("Hey! Want to initiate an Emergency Message?", isPresented: $openAlertForEmergency) {
+                Button("Cancel", role: .cancel) {
+                    fatalError("User didnt buy the emergency pack bruh")
+                }
+                Button("Buy", role: .destructive) {
+                    paidForEmergency = true
+                }
+
+            } message: {
+                Text("Buy our Emergency pack!")
+            }
+
         }
     }
 }
