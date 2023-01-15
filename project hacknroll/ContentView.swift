@@ -8,14 +8,32 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @State var selection = 1
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        ZStack {
+            KSMapView()
+            VStack {
+                TabView(selection: $selection) {
+                    ContactView()
+                        .tabItem {
+                            Label("Emergency", systemImage: "exclamationmark.triangle.fill")
+                        }
+                        .tag(0)
+                    GroupsView()
+                        .tabItem {
+                            Label("Groups", systemImage: "rectangle.3.group.fill")
+                        }
+                        .tag(1)
+                    SettingsView()
+                        .tabItem {
+                            Label("Settings", systemImage: "gearshape.fill")
+                        }
+                        .tag(2)
+                }
+            }
         }
-        .padding()
     }
 }
 
