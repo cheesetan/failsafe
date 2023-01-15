@@ -28,8 +28,11 @@ struct ContactView: View {
                                 print("Error fetching documents: \(error!)")
                                 return
                             }
-                            let users = documents.map { $0["users"]! }
-                            print("Current cities in CA: \(users.description)")
+                            let docmap = documents.map({docSnapshot in
+                                let data = docSnapshot.data()
+                                let docID = docSnapshot.documentID
+                                print(docID)
+                            })
                         }
                 } label: {
                     RoundedRectangle(cornerRadius: 48)
