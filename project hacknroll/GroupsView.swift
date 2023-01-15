@@ -19,8 +19,14 @@ struct GroupsView: View {
     @AppStorage("finalPassword", store: .standard) private var finalPassword = ""
     @AppStorage("finalEmail", store: .standard) private var finalEmail = ""
     
+    @AppStorage("paidForJoinGroup", store: .standard) private var paidForJoinGroup = false
+    @State private var openAlertForJoinGroup = false
+    
     @AppStorage("paidForNewGroup", store: .standard) private var paidForNewGroup = false
     @State private var openAlertForNewGroup = false
+    
+    @AppStorage("paidForDeleteGroup", store: .standard) private var paidForDeleteGroup = false
+    @State private var openAlertForDeleteGroup = false
 
     var body: some View {
         NavigationStack {
@@ -34,15 +40,22 @@ struct GroupsView: View {
                                         .padding(.vertical)
                                         .swipeActions {
                                             Button(role: .destructive) {
-                                                Firestore.firestore().collection("groups").document(group.id).updateData([
-                                                    "users": FieldValue.arrayRemove([finalEmail]),
-                                                ]) { err in
-                                                    if let err = err {
-                                                        print("Error updating document: \(err)")
-                                                    } else {
-                                                        print("Document successfully updated")
+                                                if paidForDeleteGroup {
+                                                    
+                                                    Firestore.firestore().collection("groups").document(group.id).updateData([
+                                                        "users": FieldValue.arrayRemove([finalEmail]),
+                                                    ]) { err in
+                                                        if let err = err {
+                                                            print("Error updating document: \(err)")
+                                                        } else {
+                                                            print("Document successfully updated")
+                                                        }
                                                     }
+                                                } else {
+                                                    openAlertForDeleteGroup = true
                                                 }
+                                                
+                                                
                                             } label: {
                                                 Label("Delete", systemImage: "trash.fill")
                                             }
@@ -51,16 +64,27 @@ struct GroupsView: View {
                             }
                         }
                     }
+                    .alert("Hey! Want to delete a group?", isPresented: $openAlertForDeleteGroup) {
+                        Button("Cancel", role: .cancel) {
+                            fatalError("User didnt buy the new delete pack bruh")
+                        }
+                        Button("Buy", role: .destructive) {
+                            paidForDeleteGroup = true
+                        }
+
+                    } message: {
+                        Text("Buy our delete group pack!")
+                    }
                 }
                 .listStyle(InsetGroupedListStyle())
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        if paidForNewGroup {
+                        if paidForJoinGroup {
                             showingJoinGroup.toggle()
                         } else {
-                            openAlertForNewGroup = true
+                            openAlertForJoinGroup = true
                         }
                         
                     } label: {
@@ -73,7 +97,12 @@ struct GroupsView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        showingNewGroupView.toggle()
+                        if paidForNewGroup {
+                            showingNewGroupView.toggle()
+                        } else {
+                            openAlertForNewGroup = true
+                        }
+                        
                     } label: {
                         Image(systemName: "square.and.pencil")
                     }
@@ -83,22 +112,34 @@ struct GroupsView: View {
                     }
                 }
             }
+            .alert("Hey! Want to make a new group?", isPresented: $openAlertForNewGroup) {
+                Button("Cancel", role: .cancel) {
+                    fatalError("User didnt buy the new group pack bruh")
+                }
+                Button("Buy", role: .destructive) {
+                    paidForNewGroup = true
+                }
+
+            } message: {
+                Text("Buy our new group pack!")
+            }
+
         }
         .onAppear {
             viewModel.fetchData()
         }
-        .alert("Hey! Want to create a new group?", isPresented: $openAlertForNewGroup) {
+        .alert("Hey! Want to join a new group?", isPresented: $openAlertForJoinGroup) {
             Button("Cancel", role: .cancel) {
-                fatalError("User didnt buy the group pack bruh")
+                fatalError("User didnt buy the join group pack bruh")
             }
             Button("Buy", role: .destructive) {
-                paidForNewGroup = true
+                paidForJoinGroup = true
             }
 
         } message: {
-            Text("Buy our new group pack!")
+            Text("Buy our join group pack!")
         }
-    }
+            }
 }
 
 struct joinGroup: View {
