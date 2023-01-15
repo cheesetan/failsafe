@@ -22,18 +22,16 @@ struct ContactView: View {
                     .foregroundColor(.red)
                 
                 Button {
-                    Firestore.firestore().collection("groups").whereField("users", isEqualTo: "\(finalEmail)")
-                        .addSnapshotListener { querySnapshot, error in
-                            guard let documents = querySnapshot?.documents else {
-                                print("Error fetching documents: \(error!)")
-                                return
+                    Firestore.firestore().collection("cities").whereField("capital", isEqualTo: true)
+                        .getDocuments() { (querySnapshot, err) in
+                            if let err = err {
+                                print("Error getting documents: \(err)")
+                            } else {
+                                for document in querySnapshot!.documents {
+                                    print("\(document.documentID) => \(document.data())")
+                                }
                             }
-                            let docmap = documents.map({docSnapshot in
-                                let data = docSnapshot.data()
-                                let docID = docSnapshot.documentID
-                                print(docID)
-                            })
-                        }
+                    }
                 } label: {
                     RoundedRectangle(cornerRadius: 48)
                         .frame(width: UIScreen.main.bounds.width / 2, height: UIScreen.main.bounds.width / 2)
