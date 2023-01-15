@@ -7,14 +7,18 @@
 
 import SwiftUI
 import Firebase
+import FirebaseAuth
 
 struct SettingsView: View {
     
     @AppStorage("isLoggedIn", store: .standard) private var isLoggedIn = false
     @AppStorage("finalPassword", store: .standard) private var finalPassword = ""
     @AppStorage("finalEmail", store: .standard) private var finalEmail = ""
-    
     @State private var displayName = String()
+    
+    // Paywalls
+    @AppStorage("paidForEditingAcctDisplayName", store: .standard) private var paidForEditingAcctDisplayName = false
+    @State private var openAlertForEditDisplayName = false
     
     var body: some View {
         NavigationStack {
@@ -76,15 +80,21 @@ struct SettingsView: View {
                         }
                     }
                     .onChange(of: displayName) { newValue in
-                        let docRef = Firestore.firestore().collection("users").document(finalEmail)
-
-                           docRef.updateData(["name": displayName]) { error in
-                               if let error = error {
-                                   print("Error updating document: \(error)")
-                               } else {
-                                   print("Document successfully updated!")
-                               }
-                           }
+                        
+                        if paidForEditingAcctDisplayName {
+                            let docRef = Firestore.firestore().collection("users").document(finalEmail)
+                            
+                            docRef.updateData(["name": displayName]) { error in
+                                if let error = error {
+                                    print("Error updating document: \(error)")
+                                } else {
+                                    print("Document successfully updated!")
+                                }
+                            }
+                        } else {
+                            print("bro forgor to pay")
+                        }
+                        
                     }
                 }
             }
@@ -107,6 +117,9 @@ struct SettingsView: View {
                     }
                 }
             }
+        }
+        .alert("", isPresented: $openAlertForEditDisplayName) {
+            
         }
     }
 }
