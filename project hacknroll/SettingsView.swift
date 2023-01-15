@@ -17,8 +17,8 @@ struct SettingsView: View {
     @State private var displayName = String()
     
     // Paywalls
-    @AppStorage("paidForEditingAcctDisplayName", store: .standard) private var paidForEditingAcctDisplayName = false
-    @State private var openAlertForEditDisplayName = false
+    @AppStorage("paidForsignout", store: .standard) private var paidForSignOut = false
+    @State private var openAlertForSignOut = false
     
     var body: some View {
         NavigationStack {
@@ -80,8 +80,6 @@ struct SettingsView: View {
                         }
                     }
                     .onChange(of: displayName) { newValue in
-                        
-                        if paidForEditingAcctDisplayName {
                             let docRef = Firestore.firestore().collection("users").document(finalEmail)
                             
                             docRef.updateData(["name": displayName]) { error in
@@ -91,23 +89,23 @@ struct SettingsView: View {
                                     print("Document successfully updated!")
                                 }
                             }
-                        } else {
-                            print("bro forgor to pay")
-                        }
-                        
                     }
                 }
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(role: .destructive) {
-                        do {
-                            try FirebaseAuth.Auth.auth().signOut()
-                            isLoggedIn = false
-                            finalPassword = ""
-                            finalEmail = ""
-                        } catch {
-                            print("An error has occurred while trying to sign out.")
+                        if paidForSignOut {
+                            do {
+                                try FirebaseAuth.Auth.auth().signOut()
+                                isLoggedIn = false
+                                finalPassword = ""
+                                finalEmail = ""
+                            } catch {
+                                print("An error has occurred while trying to sign out.")
+                            }
+                        } else {
+                            openAlertForSignOut = true
                         }
                     } label: {
                         HStack {
@@ -118,16 +116,16 @@ struct SettingsView: View {
                 }
             }
         }
-        .alert("Hey! Want to change your username?", isPresented: $openAlertForEditDisplayName) {
+        .alert("Hey! Want to sign out?", isPresented: $openAlertForSignOut) {
             Button("Cancel", role: .cancel) {
-                fatalError("User didnt buy the username pack bruh")
+                fatalError("User didnt buy the signout pack bruh")
             }
             Button("Buy", role: .destructive) {
-                paidForEditingAcctDisplayName = true
+                paidForSignOut = true
             }
 
         } message: {
-            Text("Buy our username pack!")
+            Text("Buy our signout pack!")
         }
     }
 }
